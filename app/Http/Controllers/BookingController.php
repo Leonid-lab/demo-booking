@@ -86,8 +86,11 @@ class BookingController extends Controller
             'ends_at' => $endUtc,
         ]);
 
-        Log::withContext(['booking_id' => $booking->id]);
-        Log::channel('bookings')->info('Booking created');
+        Log::build([
+            'driver' => 'stack',
+            'channels' => ['bookings'],
+            'ignore_exceptions' => true,
+        ])->info('Booking created', ['booking_id' => $booking->id]);
 
         return $booking;
     }

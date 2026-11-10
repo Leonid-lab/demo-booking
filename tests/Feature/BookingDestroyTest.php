@@ -44,6 +44,7 @@ class BookingDestroyTest extends TestCase
         Sanctum::actingAs(User::factory()->create());
 
         $this->deleteJson('/api/bookings/'.$id)->assertNotFound();
+        $this->getJson('/api/rooms/'.$id.'/bookings/today')->assertNotFound();
 
         $this->assertDatabaseEmpty('bookings');
     }

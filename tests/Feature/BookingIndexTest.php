@@ -29,5 +29,6 @@ class BookingIndexTest extends TestCase
     public function test_requires_authentication(): void
     {
         $this->getJson('/api/bookings')->assertUnauthorized();
+        $this->get('/api/bookings')->assertUnauthorized()->assertJsonPath('message', 'Unauthenticated.');
     }
 }

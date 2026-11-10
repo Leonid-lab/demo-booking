@@ -26,7 +26,11 @@ class BookingStoreTest extends TestCase
         $room = Room::factory()->create();
         $title = "O'Reilly'); DROP TABLE bookings; --";
         Log::spy();
-        Log::shouldReceive('channel')->with('bookings')->andReturnSelf();
+        Log::shouldReceive('build')->with([
+            'driver' => 'stack',
+            'channels' => ['bookings'],
+            'ignore_exceptions' => true,
+        ])->andReturnSelf();
 
         $response = $this->withToken($user->createToken('test')->plainTextToken)
             ->postJson('/api/bookings', array_replace($this->payload($room), [
@@ -61,9 +65,19 @@ class BookingStoreTest extends TestCase
         $booking = Booking::findOrFail($response->json('id'));
         $this->assertTrue($booking->user->is($user));
         $this->assertTrue($booking->room->is($room));
-        Log::shouldHaveReceived('withContext')->once()->with(['booking_id' => $booking->id]);
-        Log::shouldHaveReceived('channel')->once()->with('bookings');
-        Log::shouldHaveReceived('info')->once()->with('Booking created');
+        Log::shouldHaveReceived('info')->once()->with('Booking created', ['booking_id' => $booking->id]);
+    }
+
+    public function test_creates_booking_when_log_file_is_not_writable(): void
+    {
+        $room = Room::factory()->create();
+        Sanctum::actingAs(User::factory()->create());
+        config(['logging.channels.bookings.path' => storage_path('framework')]);
+        Log::forgetChannel('bookings');
+
+        $this->postJson('/api/bookings', $this->payload($room))->assertCreated();
+
+        $this->assertDatabaseCount('bookings', 1);
     }
 
     #[DataProvider('validIntervals')]
