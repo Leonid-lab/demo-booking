@@ -26,7 +26,11 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /.claude/
-/.agents/
+/.agents/*
+!/.agents/skills/
+/.agents/skills/*
+!/.agents/skills/ponytail/
+!/.agents/skills/deslop/
 /.gemini/
 /.junie/
 /.serena/
